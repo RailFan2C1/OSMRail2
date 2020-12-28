@@ -1,0 +1,117 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this file,
+   - You can obtain one at http://mozilla.org/MPL/2.0/.  -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OSMRail</title>
+    <meta name="description" content="OSMRail">
+    <script src="list.js"></script>
+ 
+  </head>
+  <body>
+    <div id="introDialog">
+      <h1>OSMRail - OpenStreetMap Railsimulator</h1>
+      <div id="generalinfo">
+      <p>This is an experimental railsimutaion using OpenStreetMap data.
+      </p>
+      
+    </div>
+    <div id="locationSettings">
+      search for
+      <select id="sType" size="1">
+        <option value="train">train</option>
+        <option value="tram">tram</option>
+        <option value="light_rail">light_rail</option>
+        <option value="subway">subway</option>
+        <option value="funicular">funicular</option>
+        <option value="bus">bus (unstable)</option>
+      </select>
+      in <input id="iArea" value="Stuttgart">
+      <button id="listLoadButton" >search</button>
+      </div>
+      <!--
+      <div>
+        <input id="iS" value="48.749">
+        <input id="iW" value="9.188">
+        <input id="iN" value="48.751">
+        <input id="iE" value="9.192">
+        <button id="listLoadButton2" >search</button>
+      </div>
+      -->
+      <form>
+        <select id="sList" size="5" onchange="changeRoute(this.value)"></select>
+      </form>  
+    </div>
+    <div id="locationSettings">
+      <form action="OSMRail.html" method="GET">
+        routeId<input class="routes" id="routeId" name="routeId" value="935322">
+        <a id="check" href="https://www.openstreetmap.org/relation/935322">check</a><br>
+        <input type="checkbox" id="startRevert" name="startRevert">start at other end
+        <input type="checkbox" id="startYard" name="startYard">correct 1st segment
+        <br>
+        <input type="checkbox" id="doErase" name="doErase">erase elements behind train to reduce poligons<br>
+        show 
+        <input type="checkbox" id="showTrees" name="showTrees" checked>trees
+        <input type="checkbox" id="showBuildings" name="showBuildings" checked>buildings
+        <input type="checkbox" id="showTunnels" name="showTunnels" >tunnels
+        <br> 
+        <input type="checkbox" id="debug" name="debug">debug<br>  
+        <!--<button id="locationLoadButton">Start</button>-->
+        <input type="submit" value="Start">
+      </form>
+    </div>
+    <div>
+      <h2>How to use:</h2>
+      <ul>
+        <li>select a type of route, enter your city and press search</li>
+        <ul><li>start with small tram or subway routes</li></ul>
+        <li>a list of of routes will apear (or do search for another type)</li>
+        <ul>
+          <li>pick one, then check the routeId in a new window/tab</li>
+          <li>loops will cause problems, busses often won't work</li>
+        </ul> 
+        <li>long routes may slow down performance </li>
+        <ul>
+          <li>use erase elements to "clean up" behind you</li>
+          <li>leave away details like trees or buildings</li>
+          <li>boring tunnels might freece your browser</li>
+        </ul>
+        <li>press start</li>
+        <ul>
+          <li>have patience, loading will take 30 to 60 seconds!</li>
+          <li>sometimes sorting goes wrong, check "start at the other end" and/or "correct 1st segment" and try again</li>
+          <li>use keys to control train</li>
+        </ul>
+        
+        
+        
+      </ul>
+    </div>
+    <div>
+      <table>
+        <tr><th>key</th><th>function</th></tr>
+        <tr><td>+</td><td>accelerate</td></tr>
+        <tr><td>-</td><td>brake</td></tr>
+        <tr><td>r</td><td>reverse</td></tr>
+        <tr><td>c</td><td>toggle camera</td></tr>
+        <tr><td>l</td><td>toggle loop</td></tr>
+      </table>
+    </div>
+    <div id="legalinfo">
+      <p>The source code can be found as
+        <a href="https://github.com/RailFan2C1/OSMRail">RailFan2C1/OSMRail</a> at GitHub.
+      </p>
+      <p>Based on 
+        <a href="https://github.com/KaiRo-at/vrmap"> vrmap</a> from Robert "KaiRo-at"
+      </p>
+      <p>Map data and imagery of ground tiles &copy;
+        <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>
+        contributors, under <a href="http://www.openstreetmap.org/copyright"
+        target="_blank">ODbL/CC-BY-SA</a> licenses.
+      </p>
+    </div>
+  </body>
+</html>

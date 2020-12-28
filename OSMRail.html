@@ -1,0 +1,132 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this file,
+   - You can obtain one at http://mozilla.org/MPL/2.0/.  -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OSMRail</title>
+    <meta name="description" content="OSMRail">
+    <link rel="stylesheet" href="vrmap.css">
+ 
+    <script src="https://aframe.io/aframe/dist/aframe-master.min.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component/dist/aframe-animation-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-teleport-controls/dist/aframe-teleport-controls.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.controls.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.pathfinding.min.js"></script>
+    <script src="https://unpkg.com/osmtogeojson/osmtogeojson.js"></script>
+    <script src="https://unpkg.com/aframe-curve-component/dist/aframe-curve-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-text-geometry-component/dist/aframe-text-geometry-component.min.js"></script> 
+    <script src="https://rawgit.com/protyze/aframe-alongpath-component/master/dist/aframe-alongpath-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-csg-meshs/index.js"></script>
+    <script src="main.js"></script>
+    <script src="position-limit.js"></script>
+    <script src="conversions.js"></script>
+    <script src="tiles.js"></script>
+    <script src="trees.js"></script>
+    <script src="buildings.js"></script>
+    <script src="railways.js"></script>
+    <script src="route.js"></script>
+    <script src="train.js"></script>
+    <script src="startcoord.js"></script>
+
+  </head>
+  <body>
+    <div id="legalinfo">Map data and imagery of ground tiles &copy;
+      <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors
+    </div>
+    <a-scene background="color: #CFEBFD">
+      <!--<a-entity id="ground" geometry="primitive: box; width: 100000; height: 0.01; depth: 100000;" position="0 -1 0" material="color: white"></a-entity>-->
+      <a-entity id="map">
+        <a-entity id="tiles">
+        </a-entity>
+        <a-entity id="items">
+        </a-entity>
+      </a-entity>
+      <a-entity id="cameraRig" position="0 0 0" movement-controls="speed: 10; fly: true; camera: #head;" position-limit="ymin: 0; ymax: 100;">
+        <!-- camera -->
+        <a-entity id="head" camera="active: false" look-controls position="0 1.6 0">
+          <a-entity cursor="rayOrigin: mouse;" raycaster="far: 2; objects: .clickable;"></a-entity>
+          <!--<a-entity cursor="rayOrigin: mouse"></a-entity>-->
+        </a-entity>
+        <!-- hand controls -->
+        <a-mixin id="teleport"
+                 teleport-controls="cameraRig: #cameraRig; button: trigger; teleportOrigin: #head; collisionEntities: #ground; curveShootingSpeed: 25; curveNumberPoints: 100;"
+        ></a-mixin>
+        <a-mixin id="handcursor" cursor="downEvents: triggerdown; upEvents: triggerup;" raycaster="far: 2; showLine: true; objects: .clickable;"></a-mixin>
+        <a-entity id="left-hand" mixin="teleport"
+                  oculus-touch-controls="hand: left;" vive-controls="hand: left;" windows-motion-controls="hand: left;"
+                  daydream-controls="hand: left;" gearvr-controls="hand: left,"></a-entity>
+        <a-entity id="right-hand" mixin="teleport"
+                  oculus-touch-controls="hand: right;" vive-controls="hand: right;" windows-motion-controls="hand: right;"
+                  daydream-controls="hand: right;" gearvr-controls="hand: right;"></a-entity>
+        <!-- menu -->
+        <a-plane id="menu" color="#404040" position="0 2 -1" visible="false"></a-plane>
+        
+      </a-entity>
+
+      
+
+      <a-entity>
+        <a-entity id="over" position="0 100 0">
+          <a-entity id="cover" camera="active: false" look-controls active="true"></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="train_bogie0" position="0 0 0" >
+        <a-box position="0 0 0" color="#00ffff" width="0.01" height="0.01" depth="0.01"></a-box>
+      </a-entity>
+      <a-entity id="train_bogie1" position="0 0 0" >
+        <a-box position="0 0 0" color="#ff00ff" width="0.01" height="0.01" depth="0.01"></a-box>
+      </a-entity>
+      
+      <a-entity id="train_bogie2" position="0 0 0" >
+        <a-box position="0 0 0" color="#000000" width="2.0" height="0.84" depth="1.435"></a-box>
+      </a-entity>
+      <a-entity id="train_bogie3" position="0 0 0" >
+        <a-box position="0 0 0" color="#000000" width="2.0" height="0.84" depth="1.435"></a-box>
+      </a-entity>
+      <a-entity id="train_bogie4" position="0 0 0" >
+        <a-box position="0 0 0" color="#000000" width="2.0" height="0.84" depth="1.435"></a-box>
+      </a-entity>
+      <a-entity id="train_bogie5" position="0 0 0" >
+        <a-box position="0 0 0" color="#000000" width="2.0" height="0.84" depth="1.435"></a-box>
+      </a-entity>
+
+     
+      <a-entity id="train_car0" position="0 0 0" >
+        <a-box position="0.26 1.49 0" color="#ffff00" width="18.52" height="2.98" depth="2.65">
+          <a-entity id="driver" camera="active: true" look-controls wasd-controls="fly: true; acceleration:1000" position="8.3 0.7 0" active="false">
+            <a-entity cursor="rayOrigin: mouse"></a-entity>
+            <a-entity id="menuplane" geometry="primitive: plane; height: 1.2; width: 2.2" position="0 0 -1" material="color: gray; opacity: 0.5">
+              <a-text value="Please wait,\n loading..." align="center" color="#ff0000"></a-text>
+            </a-entity>
+          </a-entity>
+
+          <a-entity id="sfloor" geometry="primitive: plane; height: 2.63; width: 1.5" position="8.25 -1.48 0" rotation="-90 0 0" material="color: gray"></a-entity>
+          <a-entity id="sroof" geometry="primitive: plane; height: 2.63; width: 1.5" position="8.25 1.48 0" rotation="90 0 0" material="color: gray"></a-entity>
+          <a-entity id="sback" geometry="primitive: plane; height: 2.96; width: 2.63" position="7.5 0 0" rotation="0 90 0" material="color: gray; opacity: 0.5"></a-entity>
+          <a-entity id="sfront" geometry="primitive: plane; height: 1.48; width: 2.63" position="9 -0.74 0" rotation="0 -90 0" material="color: yellow"></a-entity>
+          <a-entity id="sfrontglass" geometry="primitive: plane; height: 1.48; width: 2.63" position="9 0.74 0" rotation="0 -90 0" material="color: blue; opacity: 0.2"></a-entity>
+          <a-entity id="sright" geometry="primitive: plane; height: 1.48; width: 1.5" position="8.25 -0.74 1.315" rotation="0 180 0" material="color: yellow"></a-entity>
+          <a-entity id="srightglass" geometry="primitive: plane; height: 1.48; width: 1.5" position="8.25 0.74 1.315" rotation="0 180 0" material="color: blue; opacity: 0.2"></a-entity>
+          <a-entity id="sleft" geometry="primitive: plane; height: 1.48; width: 1.5" position="8.25 -0.74 -1.315" rotation="0 0 0" material="color: yellow"></a-entity>
+          <a-entity id="sleftglass" geometry="primitive: plane; height: 1.48; width: 1.5" position="8.25 0.74 -1.315" rotation="0 0 0" material="color: blue; opacity: 0.2"></a-entity>
+        
+          
+          <a-entity id="board" geometry="primitive: plane; height: 0.50; width: 2.63" position="8.79 -0.13 0" rotation="-60 -90 0" material="color: black">
+            <a-box id="but1" position="-1 0.1 0.0" color="#00ff00" width="0.2" height="0.2" depth="0.01" event-listener></a-box> 
+            <a-box id="but2" position="-1 -0.1 0.0" color="#ff0000" width="0.2" height="0.2" depth="0.01" event-listener></a-box>
+            <a-text id="dispSpeed" value="1" align="center" color="#ffffff"></a-text>
+          </a-entity>
+        </a-box>
+      </a-entity>
+
+      <a-entity id="train_car1" position="0 0 0" >
+        <a-box position="-0.26 1.49 0" color="#ffff00" width="18.52" height="2.98" depth="2.65"></a-box>
+      </a-entity>
+
+    </a-scene>
+  </body>
+</html>
