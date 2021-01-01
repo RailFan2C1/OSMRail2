@@ -48,9 +48,10 @@
     <div id="locationSettings">
       <form action="OSMRail.html" method="GET">
         routeId<input class="routes" id="routeId" name="routeId" value="935322">
-        <a id="check" href="https://www.openstreetmap.org/relation/935322">check</a><br>
-        <input type="checkbox" id="startRevert" name="startRevert">start at other end
-        <input type="checkbox" id="startYard" name="startYard">correct 1st segment
+        <!--<a id="check" href="https://www.openstreetmap.org/relation/935322">check</a><br>-->
+        <a id="check" href="https://ptna.openstreetmap.de/relation.php?id=935322">check</a><br>
+        <!--<input type="checkbox" id="startRevert" name="startRevert">start at other end-->
+        <!--<input type="checkbox" id="startYard" name="startYard">correct 1st segment-->
         <br>
         <input type="checkbox" id="doErase" name="doErase">erase elements behind train to reduce poligons<br>
         show 
@@ -71,18 +72,18 @@
         <li>a list of of routes will apear (or do search for another type)</li>
         <ul>
           <li>pick one, then check the routeId in a new window/tab</li>
-          <li>loops will cause problems, busses often won't work</li>
+          <li>roundabouts will cause problems, busses sometimes won't work</li>
         </ul> 
         <li>long routes may slow down performance </li>
         <ul>
           <li>use erase elements to "clean up" behind you</li>
           <li>leave away details like trees or buildings</li>
-          <li>boring tunnels might freece your browser</li>
+          <!--<li>boring tunnels might freece your browser</li>-->
         </ul>
         <li>press start</li>
         <ul>
           <li>have patience, loading will take 30 to 60 seconds!</li>
-          <li>sometimes sorting goes wrong, check "start at the other end" and/or "correct 1st segment" and try again</li>
+          <!--<li>sometimes sorting goes wrong, check "start at the other end" and/or "correct 1st segment" and try again</li>-->
           <li>use keys to control train</li>
         </ul>
         
@@ -102,7 +103,7 @@
     </div>
     <div id="legalinfo">
       <p>The source code can be found as
-        <a href="https://github.com/RailFan2C1/OSMRail">RailFan2C1/OSMRail</a> at GitHub.
+        <a href="https://github.com/RailFan2C1/OSMRail2">RailFan2C1/OSMRail2</a> at GitHub.
       </p>
       <p>Based on 
         <a href="https://github.com/KaiRo-at/vrmap"> vrmap</a> from Robert "KaiRo-at"

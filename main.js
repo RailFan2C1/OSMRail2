@@ -11,6 +11,7 @@ var baseTileID, baseTileSize, centerOffset;
 var tilesFromCenter = 1;
 var tilesFromCenterDelete = 3;
 var segCount = 0;
+var sortCount = 0;
 var cam = 1;
 var segNext = new Array;
 var segPrev = new Array;
@@ -36,8 +37,8 @@ var tileServer = "https://tilecache.kairo.at/mapnik/";
 // Basemap offers hires tiles for Austria.
 //var tileServer = "https://tilecache.kairo.at/basemaphires/";
 // Standard Overpass API Server
-var overpassURL = "https://overpass-api.de/api/interpreter";
-//var overpassURL = "https://lz4.overpass-api.de/api/interpreter";
+//var overpassURL = "https://overpass-api.de/api/interpreter";
+var overpassURL = "https://lz4.overpass-api.de/api/interpreter";
 
 window.onload = function() {
   let params = (new URL(document.location)).searchParams;
@@ -159,8 +160,13 @@ function loadScene() {
     baseTileID = tileIDFromLatlon(centerPos);
     baseTileSize = tilesizeFromID(baseTileID);
     //loadGroundTiles();
-    loadRoute();
+    loadRouteXML();
   }, 5000);
+
+  setTimeout(function(){
+    //loadGroundTiles();
+    loadRoute();
+  }, 10000);
     
   setTimeout(function(){
 	  var cOver = document.querySelector("#cover");
@@ -331,6 +337,30 @@ function fetchFromOverpass(opQuery) {
       var itemData = parser.parseFromString(response, "application/xml");
       var itemJSON = osmtogeojson(itemData);
       resolve(itemJSON);
+    })
+    .catch((reason) => { reject(reason); });
+  });
+}
+
+function fetchFromOverpassXML(opQuery) {
+  return new Promise((resolve, reject) => {
+    //fetch(overpassURL + "?data=" + encodeURIComponent(opQuery))
+    fetch(overpassURL, {
+      method: 'POST',
+      body: opQuery
+    })
+    .then((response) => {
+      if (response.ok) {
+        return response.text();
+      }
+      else {
+        throw "HTTP Error " + response.status;
+      }
+    })
+    .then((response) => {
+      var parser = new DOMParser();
+      var itemData = parser.parseFromString(response, "application/xml");
+      resolve(itemData);
     })
     .catch((reason) => { reject(reason); });
   });

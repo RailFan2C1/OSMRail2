@@ -3,8 +3,36 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var segmentArray = new Array;
+var wayArray = new Array;
+var stopArray = new Array;
 //var trackRange = 0.000000000001; to strict!
 var trackRange = 0.0000000001;
+
+function loadRouteXML() {
+	var rId = routeId;   //rId=34809;
+	
+	var opQueryXML = "(rel(" + rId + "););" +
+		"out body;";
+	wayArray = [];stopArray = [];
+
+	fetchFromOverpassXML(opQueryXML)
+	.then((itemData) => {
+		var member = itemData.getElementsByTagName("member");
+		for (i = 0; i < member.length; i++) { 
+			console.log(member[i].getAttribute("type")+" "+member[i].getAttribute("ref")+" "+member[i].getAttribute("role"));
+			if (member[i].getAttribute("type") == "way" && member[i].getAttribute("role") == "") {
+				wayArray.push(member[i].getAttribute("ref"));
+			}
+			if (member[i].getAttribute("role") == "stop") {
+				stopArray.push(member[i].getAttribute("ref"));
+			}			
+		}
+		//console.log(wayArray);
+		//console.log(stopArray);
+	})
+	.catch((reason) => { console.log(reason); });
+		
+}
 
 function loadRoute() {
 	/*
@@ -14,7 +42,7 @@ function loadRoute() {
 	var rId = routeId;   //rId=34809;
 	
 	var opQuery = "(rel(" + rId + "););" +
-		"out body;>;out meta qt;";
+		"out body;>;out qt;";
 	segmentArray = [];
 
 	return fetchFromOverpass(opQuery)
@@ -33,10 +61,10 @@ function loadRoute() {
 		}
 		console.log("Loaded " + segCount + " relevant tracks.");
 		//document.getElementById('info').innerHTML += "Loaded " + segCount + " relevant tracks.<br>";
-		sortSegments();
+		sortSegments2();
 	})
 	.catch((reason) => { console.log(reason); });
-
+	
 }
 
 function addRouteSegment(jsonFeature) {
@@ -135,242 +163,150 @@ function addRouteSegment(jsonFeature) {
 	});
 }
 
-function sortSegments(){
-	var segTemp1next = new Array;
-	var segTemp2next = new Array;
-	var segTemp3next = new Array;
-	var segTemp1dir = new Array;
-	var segTemp2dir = new Array;
-	var segTemp3dir = new Array;
-	//console.log(segTemp1next+":"+segTemp2next);
-	
-	//find prev and next
+function sortSegments2(){
+	var sortArray = new Array;
+	sortArray = [];
 	console.log("find,,nr,temp1,dir1,temp2,dir2,temp3,dir3,");
-	for (i = 0; i < segCount; i++) {
-		var c1 = 0, temp1=-1, temp2=-1, temp3=-1, dir1="nv", dir2 ="nv", dir3 ="nv";
+	sortCount = wayArray.length;
+	for (i = 0; i < sortCount; i++) {
+		var segname = "seg"+wayArray[i];
+		//console.log(segname+" "+segmentArray[0].segId );
 		for (j = 0; j < segCount; j++) {
-			if (i != j){
-				if (segmentArray[i].lastX == segmentArray[j].firstX && segmentArray[i].lastZ == segmentArray[j].firstZ) {
-					if(c1==0){temp1 = j;dir1 = "LF";}
-					else if(c1==1){temp2 = j;dir2 = "LF";}
-					else{temp3 = j;dir3 = "LF";alert("temp3");}
-					c1++;
-				}
-				if (segmentArray[i].lastX == segmentArray[j].lastX && segmentArray[i].lastZ == segmentArray[j].lastZ) {
-					if(c1==0){temp1 = j;dir1 = "LL";}
-					else if(c1==1){temp2 = j;dir2 = "LL";}
-					else{temp3 = j;dir3 = "LL";alert("temp3");}
-					c1++;
-				}
-				if (segmentArray[i].firstX == segmentArray[j].firstX && segmentArray[i].firstZ == segmentArray[j].firstZ) {
-					if(c1==0){temp1 = j;dir1 = "FF";}
-					else if(c1==1){temp2 = j;dir2 = "FF";}
-					else{temp3 = j;dir3 = "FF";alert("temp3");}
-					c1++;
-				}
-				if (segmentArray[i].firstX == segmentArray[j].lastX && segmentArray[i].firstZ == segmentArray[j].lastZ) {
-					if(c1==0){temp1 = j;dir1 = "FL";}
-					else if(c1==1){temp2 = j;dir2 = "FL";}
-					else{temp3 = j;dir3 = "FL";alert("temp3");}
-					c1++;
-				}
-			
-
+			if ( segname == segmentArray[j].segId) {
+				//console.log("find,,"+j+","+segmentArray[j].segId);	
+				sortArray.push(segmentArray[j]);
 			}
 		}
-		segTemp1next[i]=temp1;
-		segTemp2next[i]=temp2;
-		segTemp3next[i]=temp3;
-		segTemp1dir[i]=dir1;
-		segTemp2dir[i]=dir2;
-		segTemp3dir[i]=dir3;
-		console.log("find,,"+i+","+segTemp1next[i]+","+segTemp1dir[i]+","+segTemp2next[i]+","+segTemp2dir[i]+","+segTemp3next[i]+","+segTemp3dir[i]+",");
 	}
-	
-	//sort segments
-	var c2=0;cOld=0;
-	var segCur=0;
-	var segOld=0;
-	var segStart=0;
+	console.log(sortArray);
 
-	console.log("sort,type,nr,curr,,prev,,next,dir,");
-	
-	//first element
-	if (startRevert!="on"){
-		segNext[0]=segTemp1next[0];
-		segPrev[0]=segTemp2next[0];	
-		segDir[0]=1;
-	}
-	else {
-		segNext[0]=segTemp2next[0];
-		segPrev[0]=segTemp1next[0];	
-		segDir[0]=-1;		
-	}
+	var sortDir = new Array;
+	sortDir = [];
 
-	console.log("sort,start,"+c2+","+segCur+",,"+segPrev[c2]+",,"+segNext[c2]+",1,");
-	segOld=segCur;
-	cOld=c2;
+	if (sortArray[0].lastX == sortArray[1].firstX && sortArray[0].lastZ == sortArray[1].firstZ) { sortDir[0] = 1 }
+	if (sortArray[0].lastX == sortArray[1].lastX && sortArray[0].lastZ == sortArray[1].lastZ) { sortDir[0] = 1 }
+	if (sortArray[0].firstX == sortArray[1].firstX && sortArray[0].firstZ == sortArray[1].firstZ) { sortDir[0] = -1 }
+	if (sortArray[0].firstX == sortArray[1].lastX && sortArray[0].firstZ == sortArray[1].lastZ) { sortDir[0] = -1 }
+	segNext[0] = 1;
+	segPrev[0] = -1;
+	
+	for (i = 1; i < sortCount; i++) {	
+		j = i-1;
+		//roundabouts
+		if (sortArray[i].lastX == sortArray[i].firstX && sortArray[i].lastZ == sortArray[i].firstZ) {
+			alert("roundabout "+sortArray[i].segId);
+			j = i-2;
+		}
+		//get directions
+		if (sortArray[j].lastX == sortArray[i].firstX && sortArray[j].lastZ == sortArray[i].firstZ)   { sortDir[i] = sortDir[j]     ;}//"LF" }
+		if (sortArray[j].lastX == sortArray[i].lastX && sortArray[j].lastZ == sortArray[i].lastZ)     { sortDir[i] = sortDir[j] * -1;}//"LL" }
+		if (sortArray[j].firstX == sortArray[i].firstX && sortArray[j].firstZ == sortArray[i].firstZ) { sortDir[i] = sortDir[j] * -1;}//"FF" }
+		if (sortArray[j].firstX == sortArray[i].lastX && sortArray[j].firstZ == sortArray[i].lastZ)   { sortDir[i] = sortDir[j]     ;}//"FL" }
+	
+		segNext[i] = i+1;
+		segPrev[i] = i-1;
+	}
+	segNext[sortCount-1] = -1;
+	console.log(sortDir);
+	console.log(segNext);
+	console.log(segPrev);
 
-	//go backward till prev=-1
-	while (segPrev[segCur]!="-1") { 
-		segCur = segPrev[segCur];
-		c2++;
-		if(segOld==segTemp1next[segCur]){
-			segNext[segCur]=segTemp1next[segCur];
-			segPrev[segCur]=segTemp2next[segCur];
-		}
-		else if(segOld==segTemp2next[segCur]){
-			segNext[segCur]=segTemp2next[segCur];
-			segPrev[segCur]=segTemp1next[segCur];
-		}
-		else {alert("error in segmentB: "+segCur+" t1: "+segTemp1next[segCur]+" t2: "+segTemp2next[segCur]);}
-		console.log("sort,backward,"+c2+","+segCur+",,"+segPrev[segCur]+",,"+segNext[segCur]+",-1,");
-		segOld=segCur;
-		cOld=c2;
-		//emregency breake
-		if(c2>=2000){segPrev[csegCur]=-1;alert("bad route");}
-	}
-	segStart=segCur;
-	//go forward till next=-1
-	var hc1=0;
-	while (segNext[segCur]!="-1") {
-		segCur = segNext[segCur];
-		if(segStart>0 && hc1==0) {
-			segCur=segNext[0];
-			segOld=0;hc1++;
-			if(segCur=="-1"){break;}
-		}
-		c2++;
-		if(segOld==segTemp1next[segCur]){
-			segNext[segCur]=segTemp2next[segCur];
-			segPrev[segCur]=segTemp1next[segCur];
-		}
-		else if(segOld==segTemp2next[segCur]){
-			segNext[segCur]=segTemp1next[segCur];
-			segPrev[segCur]=segTemp2next[segCur];
-		}
-		else {alert("error in segmentF: "+segCur+" t1: "+segTemp1next[segCur]+" t2: "+segTemp2next[segCur]);}
-		console.log("sort,forward,"+c2+","+segCur+",,"+segPrev[segCur]+",,"+segNext[segCur]+",1,");
-		segOld=segCur;
-		cOld=c2;
-		//emregency breake
-		if(c2>=1000){segNext[segCur]=-1;alert("bad route");}
-	}
-	
-	if(c2!=segCount-1){alert("bad route"+" c"+c2+" s"+segCount);}
-	console.log("segStart: "+segStart);
-	var i1=0;
-	var c4=segStart,c6=0;
-	
 	//create tracks
 	
 	//first segment
 	var tx=0;
 	var tz=0;
 	if(segCount==1){
-		tx=segmentArray[c4].segPointArray[0].absX;
-		tz=segmentArray[c4].segPointArray[0].absZ;
+		tx=sortArray[0].segPointArray[0].absX;
+		tz=sortArray[0].segPointArray[0].absZ;
 	}
 	else{
-		if(
-			((Math.abs(segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX)
-			-Math.abs(segmentArray[segNext[c4]].segPointArray[0].absX)
-			<trackRange)
-			&&
-			( Math.abs(segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ)
-			-Math.abs(segmentArray[segNext[c4]].segPointArray[0].absZ)
-			<trackRange))
-			||
-			((Math.abs(segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX)
-			-Math.abs(segmentArray[segNext[c4]].segPointArray[segmentArray[segNext[c4]].num-1].absX)
-			<trackRange)
-			&&
-			( Math.abs(segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ)
-			-Math.abs(segmentArray[segNext[c4]].segPointArray[segmentArray[segNext[c4]].num-1].absZ)
-			<trackRange))			
-		){	
-			console.log("Start Segment 0 Point 0 "+segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX+","+segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ);
-			tx=segmentArray[c4].segPointArray[0].absX;
-			tz=segmentArray[c4].segPointArray[0].absZ;
+		if( sortDir[0] == 1)			
+		{	
+			console.log("Start Segment 0 Point 0 "+sortArray[0].segPointArray[0].absX+","+sortArray[0].segPointArray[0].absZ);
+			tx=sortArray[0].segPointArray[0].absX;
+			tz=sortArray[0].segPointArray[0].absZ;
 		}	
 		else {
-			console.log("Start Segment 0 Point N "+segmentArray[c4].segPointArray[0].absX+","+segmentArray[c4].segPointArray[0].absZ);
-			tx=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX;
-			tz=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ;	
+			console.log("Start Segment 0 Point N "+sortArray[0].segPointArray[sortArray[0].num-1].absX+","+sortArray[0].segPointArray[sortArray[0].num-1].absZ);
+			tx=sortArray[0].segPointArray[sortArray[0].num-1].absX;
+			tz=sortArray[0].segPointArray[sortArray[0].num-1].absZ;	
 		}
+		/*
 		if (startYard=="on")  {
-			console.log("Start Segment 0 Point N "+segmentArray[c4].segPointArray[0].absX+","+segmentArray[c4].segPointArray[0].absZ);
-			tx=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX;
-			tz=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ;	
+			console.log("Start Segment 0 Point N "+sortArray[0].segPointArray[0].absX+","+sortArray[0].segPointArray[0].absZ);
+			tx=sortArray[0].segPointArray[sortArray[0].num-1].absX;
+			tz=sortArray[0].segPointArray[sortArray[0].num-1].absZ;	
 		}
+		*/
 	}
-	
+
 	//showRoutePoints2
 	var showRoutePoints2 = document.createElement("a-entity");
-
+	c4=0;c6=0;i1=0;
 	console.log("track,seg,lon1,lat1,lonN,latN,absX,absZ,num,");
 	while(true) {	
-		console.log("track,"+segmentArray[c4].segId+","	
-							+segmentArray[c4].firstX+","+segmentArray[c4].firstZ+","
-							+segmentArray[c4].lastX+","+segmentArray[c4].lastZ+","
-							+segmentArray[c4].segX1+","+segmentArray[c4].segZ1+","
-							+segmentArray[c4].num+",");
+		console.log("track,"+sortArray[c4].segId+","	
+							+sortArray[c4].firstX+","+sortArray[c4].firstZ+","
+							+sortArray[c4].lastX+","+sortArray[c4].lastZ+","
+							+sortArray[c4].segX1+","+sortArray[c4].segZ1+","
+							+sortArray[c4].num+",");
 
-		if(Math.abs(tx-segmentArray[c4].segPointArray[0].absX)<trackRange && Math.abs(tz-segmentArray[c4].segPointArray[0].absZ)<trackRange){
-			for(c7=0;c7<segmentArray[c4].num;c7++) {
+		if(sortDir[c4]==1){
+			for(c7=0;c7<sortArray[c4].num;c7++) {
 				//showRoutePoints2
 				var SRP2 = document.createElement('a-entity');
 				SRP2.setAttribute('geometry', {primitive: 'sphere', radius: 0.3,});
 				if(c7==0){SRP2.setAttribute('material', 'color', 'red');}
 				else{SRP2.setAttribute('material', 'color', 'blue');}
-				SRP2.setAttribute('position', {	x: segmentArray[c4].segPointArray[c7].absX, 
+				SRP2.setAttribute('position', {	x: sortArray[c4].segPointArray[c7].absX, 
 												y: 1, 
-												z: segmentArray[c4].segPointArray[c7].absZ});
+												z: sortArray[c4].segPointArray[c7].absZ});
 				showRoutePoints2.appendChild(SRP2);	
 				
-				console.log("trackf,"+segmentArray[c4].segId+","+c6+","+c4+","+c7+",,"
-				+(segmentArray[c4].segPointArray[c7].absX)+","
-				+(segmentArray[c4].segPointArray[c7].absZ)+",,"
+				console.log("trackf,"+sortArray[c4].segId+","+c6+","+c4+","+c7+",,"
+				+(sortArray[c4].segPointArray[c7].absX)+","
+				+(sortArray[c4].segPointArray[c7].absZ)+",,"
 				);
-				var trObj = { 	Id: segmentArray[c4].segId,
+				var trObj = { 	Id: sortArray[c4].segId,
 								Prev: c6-1, 
 								Next: c6+1, 
-								PositionX: segmentArray[c4].segPointArray[c7].absX, 
-								PositionZ: -segmentArray[c4].segPointArray[c7].absZ,
+								PositionX: sortArray[c4].segPointArray[c7].absX, 
+								PositionZ: -sortArray[c4].segPointArray[c7].absZ,
 							 };
 				track.push(trObj);
 				c6++;
 			}
-			tx=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absX;
-			tz=segmentArray[c4].segPointArray[segmentArray[c4].num-1].absZ;
+			tx=sortArray[c4].segPointArray[sortArray[c4].num-1].absX;
+			tz=sortArray[c4].segPointArray[sortArray[c4].num-1].absZ;
 		}
 		else{
-			for(c7=segmentArray[c4].num-1;c7>=0;c7--) {
+			for(c7=sortArray[c4].num-1;c7>=0;c7--) {
 				//showRoutePoints2
 				var SRP2 = document.createElement('a-entity');
 				SRP2.setAttribute('geometry', {primitive: 'sphere', radius: 0.3,});
 				if(c7==0){SRP2.setAttribute('material', 'color', 'red');}
 				else{SRP2.setAttribute('material', 'color', 'blue');}
-				SRP2.setAttribute('position', {	x: segmentArray[c4].segPointArray[c7].absX, 
+				SRP2.setAttribute('position', {	x: sortArray[c4].segPointArray[c7].absX, 
 												y: 1, 
-												z: segmentArray[c4].segPointArray[c7].absZ});
+												z: sortArray[c4].segPointArray[c7].absZ});
 				showRoutePoints2.appendChild(SRP2);	
 				
-				console.log("trackb,"+segmentArray[c4].segId+","+c6+","+c4+","+c7+",,"
-				+(segmentArray[c4].segPointArray[c7].absX)+","
-				+(segmentArray[c4].segPointArray[c7].absZ)+",,"
+				console.log("trackb,"+sortArray[c4].segId+","+c6+","+c4+","+c7+",,"
+				+(sortArray[c4].segPointArray[c7].absX)+","
+				+(sortArray[c4].segPointArray[c7].absZ)+",,"
 				);
-				var trObj = { 	Id: segmentArray[c4].segId, 
+				var trObj = { 	Id: sortArray[c4].segId, 
 								Prev: c6-1, 
 								Next: c6+1, 
-								PositionX: segmentArray[c4].segPointArray[c7].absX, 
-								PositionZ: -segmentArray[c4].segPointArray[c7].absZ,
+								PositionX: sortArray[c4].segPointArray[c7].absX, 
+								PositionZ: -sortArray[c4].segPointArray[c7].absZ,
 							};
 				track.push(trObj);				
 				c6++;
 			}
-			tx=segmentArray[c4].segPointArray[0].absX;
-			tz=segmentArray[c4].segPointArray[0].absZ;	
+			tx=sortArray[c4].segPointArray[0].absX;
+			tz=sortArray[c4].segPointArray[0].absZ;	
 		}
 				
 		if(segNext[c4]==-1 || i1==1000){break;}
@@ -425,4 +361,5 @@ function sortSegments(){
 
 	console.log("Segments sorted");
 	//document.getElementById('info').innerHTML += "Segments sorted<br>";
+
 }

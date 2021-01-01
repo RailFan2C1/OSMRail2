@@ -60,5 +60,6 @@ function fetchFromOverpass(opQuery) {
 
 function changeRoute(routeId) {
   document.getElementById('routeId').value = routeId;
-  document.getElementById('check').setAttribute('href', "https://www.openstreetmap.org/relation/"+routeId);
+  //document.getElementById('check').setAttribute('href', "https://www.openstreetmap.org/relation/"+routeId);
+  document.getElementById('check').setAttribute('href', "https://ptna.openstreetmap.de/relation.php?id="+routeId);
 }
