@@ -36,6 +36,7 @@ function addTile(relX, relZ) {
       tile.setAttribute("rotation", {x: -90, y: 0, z: 0});
       tile.setAttribute("position", getPositionFromTilepos({x: relX, y: relZ}, {x: 0.5, y: 0.5}));
       tile.setAttribute("src", tileServer + tileZoom + "/" + (baseTileID.x + relX) + "/" + (baseTileID.y + relZ) + ".png");
+      tile.setAttribute("crossorigin","Anonymous");
       tile.setAttribute("width", baseTileSize);
       tile.setAttribute("height", baseTileSize);
       tiles.appendChild(tile);
